@@ -99,18 +99,19 @@ async function loadRoute() {
 
 function buildProfile() {
   const svg = document.getElementById('profile-svg')
-  const W = 1000, H = 72
-  svg.setAttribute('viewBox', `0 0 ${W} ${H}`)
+  const W = 1000, H = 72, PAD = 52  // PAD = místo pro Y-osu vlevo
+  svg.setAttribute('viewBox', `0 0 ${W + PAD} ${H}`)
 
   const stride = Math.max(1, Math.floor(routeCoords.length / W))
   const elevs = []
   for (let i = 0; i < routeCoords.length; i += stride) elevs.push(routeCoords[i][2] ?? minElev)
 
   const scaleY = e => H - 6 - ((e - minElev) / (maxElev - minElev)) * (H - 14)
-  const pts = elevs.map((e, i) => `${(i / (elevs.length - 1) * W).toFixed(1)},${scaleY(e).toFixed(1)}`)
+  const scaleX = i => PAD + (i / (elevs.length - 1)) * W
+  const pts = elevs.map((e, i) => `${scaleX(i).toFixed(1)},${scaleY(e).toFixed(1)}`)
 
   const area = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-  area.setAttribute('d', `M0,${H} L${pts.join(' L')} L${W},${H} Z`)
+  area.setAttribute('d', `M${PAD},${H} L${pts.join(' L')} L${W + PAD},${H} Z`)
   area.setAttribute('fill', 'rgba(255,180,50,0.55)')
   svg.appendChild(area)
 
@@ -121,9 +122,28 @@ function buildProfile() {
   line.setAttribute('stroke-width', '1.5')
   svg.appendChild(line)
 
+  // Y-osa: max, střed, min
+  const mid = Math.round((minElev + maxElev) / 2)
+  const labels = [
+    { elev: maxElev, y: scaleY(maxElev) },
+    { elev: mid,     y: scaleY(mid) },
+    { elev: minElev, y: scaleY(minElev) },
+  ]
+  for (const { elev, y } of labels) {
+    const t = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+    t.setAttribute('x', PAD - 4)
+    t.setAttribute('y', Math.max(10, Math.min(H - 2, y + 4)).toFixed(1))
+    t.setAttribute('text-anchor', 'end')
+    t.setAttribute('fill', 'rgba(255,220,120,0.9)')
+    t.setAttribute('font-size', '10')
+    t.setAttribute('font-family', 'sans-serif')
+    t.textContent = `${Math.round(elev)} m`
+    svg.appendChild(t)
+  }
+
   const indicator = document.createElementNS('http://www.w3.org/2000/svg', 'line')
   indicator.id = 'profile-indicator'
-  indicator.setAttribute('x1', 0); indicator.setAttribute('x2', 0)
+  indicator.setAttribute('x1', PAD); indicator.setAttribute('x2', PAD)
   indicator.setAttribute('y1', 0); indicator.setAttribute('y2', H)
   indicator.setAttribute('stroke', 'white')
   indicator.setAttribute('stroke-width', '2')
@@ -182,7 +202,7 @@ function step(ts) {
   runnerMarker.setLngLat([lon, lat])
 
   const ind = document.getElementById('profile-indicator')
-  const x = (progress * 1000).toFixed(1)
+  const x = (52 + progress * 1000).toFixed(1)
   ind.setAttribute('x1', x); ind.setAttribute('x2', x)
 
   if (progress < 1) {
