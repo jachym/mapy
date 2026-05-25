@@ -17,7 +17,9 @@ const map = new maptilersdk.Map({
   style: `https://api.maptiler.com/maps/${STYLES[0].id}/style.json?key=${KEY}`,
   center: [15.0, 50.755],
   zoom: 11.5,
+  pitch: 30,
   hash: true,
+  projection: 'globe',
 })
 
 // --- Trasa ---
@@ -40,7 +42,19 @@ function addRouteLayers() {
   })
 }
 
-map.on('style.load', addRouteLayers)
+map.on('style.load', () => {
+  map.addSource('maptiler-terrain', {
+    type: 'raster-dem',
+    url: `https://api.maptiler.com/tiles/terrain-rgb-v2/tiles.json?key=${KEY}`,
+    tileSize: 256
+  })
+  map.addLayer({
+    id: 'sky', type: 'sky',
+    paint: { 'sky-type': 'atmosphere', 'sky-atmosphere-sun': [0, 90], 'sky-atmosphere-sun-intensity': 15 }
+  })
+  map.setTerrain({ source: 'maptiler-terrain', exaggeration: 1.5 })
+  addRouteLayers()
+})
 
 map.on('load', loadRoute)
 
