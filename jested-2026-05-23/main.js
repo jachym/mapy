@@ -88,13 +88,13 @@ async function loadRoute() {
 
 // --- Přepínač stylů ---
 const styleBtn = document.getElementById('style-btn')
+styleBtn.textContent = STYLES[0].label
 styleBtn.addEventListener('click', () => {
   styleIdx = (styleIdx + 1) % STYLES.length
   const s = STYLES[styleIdx]
   map.setStyle(`https://api.maptiler.com/maps/${s.id}/style.json?key=${KEY}`)
-  styleBtn.textContent = STYLES[(styleIdx + 1) % STYLES.length].label
+  styleBtn.textContent = s.label
 })
-styleBtn.textContent = STYLES[1].label  // ukazuje DALŠÍ styl
 
 // --- Flythrough ---
 const DEG = Math.PI / 180
