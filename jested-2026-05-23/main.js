@@ -83,7 +83,7 @@ async function loadRoute() {
   buildProfile()
 
   const el = document.createElement('img')
-  el.src = '/runner.png'
+  el.src = import.meta.env.BASE_URL + 'runner.png'
   el.width = 52
   el.height = 96
   el.style.display = 'none'
